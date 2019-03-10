@@ -2,6 +2,19 @@
 <resources>
     <string name="app_name">Звуки животных</string>
     <string name="action_settings">Настройки</string>
+    <string name="tabs">Вкладки</string>
+    <string name="click">Клик по картинке</string>
+    <string name="clicktext">Клик по тексту</string>
+    <string name="longclick">Долгий клик</string>
+    <string name="bigimage">Большое изображение</string>
+    <string name="category">Для смены звуков кликнуть на вкладку</string>
+    <string name="clickdesc">При клике по изображению проигрывается звук </string>
+    <string name="longclickdesc">При долгом клике проигрывается звук и открывается большое изображение </string>
+    <string name="bigimagedesc">При нажатии на большое изображение звук проигрывается снова</string>
+    <string name="clicktextdesc">При клике по тексту - название животного</string>
+    <string name="game">Игра</string>
+    <string name="gametext">Угадывайте животных в играх</string>
+
     <string name="ants">Муравьи</string>
     <string name="bear">Медведь</string>
     <string name="bees">Пчелы</string>
@@ -13,10 +26,11 @@
     <string name="chiken">Курица</string>
     <string name="cock">Петух</string>
     <string name="cow">Корова</string>
-    <string name="cricket">Сверчек</string>
+    <string name="cricket">Сверчок</string>
     <string name="crocodile">Крокодил</string>
     <string name="crow">Ворона</string>
     <string name="cuckoo">Кукушка</string>
+    <string name="chipmunk"> Бурундук </string>
     <string name="dog">Собака</string>
     <string name="dolphin">Дельфин</string>
     <string name="donkey">Осел</string>
@@ -74,4 +88,58 @@
     <string name="wolf">Волк</string>
     <string name="woodpecker">Дятел</string>
     <string name="zebra">Зебра</string>
+    <string name="badger">Барсук</string>
+    <string name="beaver">Бобер</string>
+    <string name="catbird">Дрозд</string>
+    <string name="deer">Олень</string>
+    <string name="giraffe">Жираф</string>
+    <string name="hedgehog">Ёжик</string>
+    <string name="mole">Крот</string>
+    <string name="otter">Выдра</string>
+    <string name="rabbit">Кролик</string>
+    <string name="robin">Зарянка</string>
+    <string name="skunk">Скунс</string>
+    <string name="tit">Синица</string>
+    <string name="toucan">Тукан</string>
+    <string name="turtle">Черепаха</string>
+    <string name="bison">Зубр</string>
+    <string name="blackgrouse">Тетерев</string>
+    <string name="boar">Кабан</string>
+    <string name="hummingbird">Колибри</string>
+    <string name="lobster">Рак</string>
+    <string name="cicada">Цикада</string>
+
+    <string name="bullfinch"> Снегирь </string>
+    <string name="stork"> Аист </string>
+    <string name="heron"> Цапля </string>
+    <string name="canary"> Канарейка </string>
+    <string name="magpie"> Сорока </string>
+    <string name="bat"> Летучая мышь </string>
+    <string name="jay"> Сойка </string>
+    <string name="starling"> Скворец </string>
+
+    <string name="alpaca"> Альпака </string>
+    <string name="hyena"> Гиена </string>
+
+
+    <string name="dragon"> Дракон </string>
+    <string name="unicorn"> Единорог </string>
+    <string name="pokemon"> Покемон </string>
+    <string name="buckbeak"> Клювокрыл </string>
+    <string name="dinosaur"> Динозавр </string>
+    <string name="pegasus"> Пегас </string>
+    <string name="centaur"> Кентавр </string>
+    <string name="phoenix"> Феникс </string>
+    <string name="waternymph"> Русалка </string>
+
+    <string name="griffon"> Гриффон </string>
+
+    <string name="fromdottodot">Рисуем по точкам</string>
+    <string name="draw">Рисование</string>
+    <string name="lullaby">Колыбельные</string>
+    <string name="recipe">Прописи для детей</string>
+    <string name="rebuses">Ребусы</string>
+    <string name="recipeabc">Прописи буквы и цифры</string>
+    <string name="phrasebook">Разговорник для детей и взрослых</string>
+
 </resources>

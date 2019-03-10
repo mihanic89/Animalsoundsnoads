@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.yamilab.animalsoundsnoads", appContext.getPackageName());
+        assertEquals("com.yamilab.animalsounds", appContext.getPackageName());
     }
 }

@@ -3,11 +3,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="8dp"
-    tools:context="com.yamilab.animalsoundsnoads.MainActivity$PlaceholderFragment">
+    >
 
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerView"
+        android:saveEnabled="false"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars="vertical" />
