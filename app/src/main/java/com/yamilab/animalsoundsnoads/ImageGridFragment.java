@@ -2,9 +2,11 @@ package com.yamilab.animalsoundsnoads;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.StaggeredGridLayoutManager;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,10 +15,11 @@ import java.util.ArrayList;
 
 public class ImageGridFragment extends Fragment {
 
-   // private ViewPreloadSizeProvider<Animal> preloadSizeProvider;
+    // private ViewPreloadSizeProvider<Animal> preloadSizeProvider;
     //private static final int PRELOAD_AHEAD_ITEMS = 5;
     RecyclerView recyclerView;
     StaggeredGridLayoutManager staggeredGridLayoutManager;
+    LinearLayoutManager llm;
     AnimalAdapter animalAdapter;
     GlideRequests glideRequests;
 
@@ -56,35 +59,60 @@ public class ImageGridFragment extends Fragment {
 
 
 
-        int spanCount = 2;
+        int spanCount = 1;
+
+        try {
+            if (((MainActivity) getActivity()).getGrid()) {
+                spanCount = 1;
+            }
+        }
+        catch (Exception e){
+
+        }
+
 
         int screenSize = getResources().getConfiguration().screenLayout &
                 Configuration.SCREENLAYOUT_SIZE_MASK;
 
-        if (screenSize >= Configuration.SCREENLAYOUT_SIZE_LARGE) spanCount = 3;
+        if (screenSize >= Configuration.SCREENLAYOUT_SIZE_LARGE) spanCount ++;
 
         recyclerView = rootView.findViewById(R.id.recyclerView);
 
-        staggeredGridLayoutManager = new StaggeredGridLayoutManager(spanCount, StaggeredGridLayoutManager.VERTICAL);
-        recyclerView.setLayoutManager(staggeredGridLayoutManager);
-        recyclerView.setHasFixedSize(true);
+        if (spanCount==1) {
+            if (getActivity()!=null) {
+                llm = new LinearLayoutManager(getActivity());
+            }
+            else {
+                llm = new LinearLayoutManager(rootView.getContext());
+            }
+            recyclerView.setLayoutManager(llm);
+        }
+        else
+        {
+            staggeredGridLayoutManager = new StaggeredGridLayoutManager(spanCount, StaggeredGridLayoutManager.VERTICAL);
+            recyclerView.setLayoutManager(staggeredGridLayoutManager);
+        }
+
+
         if (getActivity()!=null){
-        animalAdapter = new AnimalAdapter((ArrayList<Animal>) getArguments().getSerializable("key"),
-                getArguments().getInt("width") / (spanCount + 1)
-                ,getActivity()
-                //,GlideApp.with(this)
-                ,  glideRequests
-        );}
+            animalAdapter = new AnimalAdapter((ArrayList<Animal>) getArguments().getSerializable("key"),
+                    getArguments().getInt("width") / (spanCount + 1)
+                    ,getActivity()
+                    //,GlideApp.with(this)
+                    ,  glideRequests
+            );}
         else
 
             animalAdapter = new AnimalAdapter((ArrayList<Animal>) getArguments().getSerializable("key"),
                     getArguments().getInt("width") / (spanCount + 1)
                     ,rootView.getContext()
-                  //  ,GlideApp.with(this)
-                  ,  glideRequests
+                    //  ,GlideApp.with(this)
+                    ,  glideRequests
             );
 
         recyclerView.setAdapter(animalAdapter);
+        recyclerView.setItemViewCacheSize(spanCount * 5);
+        recyclerView.setHasFixedSize(true);
 
             /*
             preloadSizeProvider = new ViewPreloadSizeProvider<>();
@@ -100,6 +128,8 @@ public class ImageGridFragment extends Fragment {
 
         return rootView;
     }
+
+
 
     /*
     @Override

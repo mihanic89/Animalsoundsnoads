@@ -1,8 +1,11 @@
 package com.yamilab.animalsoundsnoads;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import androidx.fragment.app.Fragment;
+
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,13 +21,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade;
-import static com.yamilab.animalsoundsnoads.R.id.buttonNext;
-import static com.yamilab.animalsoundsnoads.R.id.buttonSound;
-import static com.yamilab.animalsoundsnoads.R.id.imageFull;
-import static com.yamilab.animalsoundsnoads.R.id.imageGame0;
-import static com.yamilab.animalsoundsnoads.R.id.imageGame1;
-import static com.yamilab.animalsoundsnoads.R.id.imageGame2;
-import static com.yamilab.animalsoundsnoads.R.id.imageGame3;
+
 
 /**
  * Created by Misha on 28.03.2017.
@@ -34,11 +31,14 @@ public class ImageGridFragmentGame extends Fragment {
 
     private static final String TAG = "RecyclerViewFragment";
     private static final String KEY_LAYOUT_MANAGER = "layoutManager";
+    private static final String KEY_WRONG_COUNTER = "wrongCounter";
+    private static final String KEY_CORRECT_COUNTER = "correctCounter";
     private static final int SPAN_COUNT = 2;
     private static final int DATASET_COUNT = 40;
     private TTSListener ttsListener;
     private FirebaseAnalytics mFirebaseAnalytics;
-    private int adCounter=0;
+
+    //private int adCounter=0;
 // ...
 // Obtain the FirebaseAnalytics instance.
 
@@ -70,13 +70,18 @@ public class ImageGridFragmentGame extends Fragment {
 
     private int[] cardsNumbers;
 
+    private int correctInt=0, wrongInt=0;
+    private boolean wrongHasTry=false;
+
+    private ArrayList<Integer> numbers = new ArrayList<>();
+
     ImageButton image0;
     ImageButton image1;
     ImageButton image2;
     ImageButton image3;
     ImageButton full;
 
-    Button buttonAnswer;
+    Button buttonAnswer,correctCounter, wrongCounter;
 
 
     @Override
@@ -97,12 +102,12 @@ public class ImageGridFragmentGame extends Fragment {
         if (ttsListener==null){
             ttsListener = (TTSListener)context;}
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(context);
-}
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        final View rootView = inflater.inflate(R.layout.fragment_game, container, false);
+        final View rootView = inflater.inflate(R.layout.fragment_game_rebuild_count, container, false);
 
         animals = new ArrayList<Animal>();
 
@@ -115,24 +120,41 @@ public class ImageGridFragmentGame extends Fragment {
 
 
 
-        image0= rootView.findViewById(imageGame0);
-        image1= rootView.findViewById(imageGame1);
-        image2= rootView.findViewById(imageGame2);
-        image3= rootView.findViewById(imageGame3);
-        full = rootView.findViewById(imageFull);
+        image0= rootView.findViewById(R.id.imageGame0);
+        image1= rootView.findViewById(R.id.imageGame1);
+        image2= rootView.findViewById(R.id.imageGame2);
+        image3= rootView.findViewById(R.id.imageGame3);
+        full = rootView.findViewById(R.id.imageFull);
 
         //textAnswer = (TextView) rootView.findViewById(R.id.textAnswer);
         buttonAnswer = rootView.findViewById(R.id.buttonAnswer);
 
-        ImageButton sound = rootView.findViewById(buttonSound);
-        ImageButton next = rootView.findViewById(buttonNext);
+        correctCounter = rootView.findViewById(R.id.correctCounter);
+        wrongCounter = rootView.findViewById(R.id.wrongCounter);
+
+        SharedPreferences getPrefs = PreferenceManager
+                .getDefaultSharedPreferences(this.getActivity());
+
+
+        correctInt=getPrefs.getInt(KEY_CORRECT_COUNTER,0);
+        wrongInt=getPrefs.getInt(KEY_WRONG_COUNTER,0);
+        if (wrongInt>999||correctInt>999){
+            wrongInt=0;
+            correctInt=0;
+        }
+
+        wrongCounter.setText( String.valueOf(wrongInt));
+        correctCounter.setText( String.valueOf(correctInt));
+
+        ImageButton sound = rootView.findViewById(R.id.buttonSound);
+        ImageButton next = rootView.findViewById(R.id.buttonNext);
 
         try
         {
             generateWrong();
             setImages();
-           // newRound();
-            adCounter=0;
+            // newRound();
+            // adCounter=0;
         }
         catch (Exception e){
 
@@ -209,8 +231,8 @@ public class ImageGridFragmentGame extends Fragment {
             @Override
             public void onClick(View v) {
                 newRound();
-               // generateWrong();
-               // setImages();
+                // generateWrong();
+                // setImages();
             }
         });
 
@@ -230,6 +252,19 @@ public class ImageGridFragmentGame extends Fragment {
     private void generateWrong(){
 
         correctAnswer = new Random().nextInt(size);
+
+        while (numbers.contains(correctAnswer)){
+            correctAnswer = new Random().nextInt(size);
+
+
+        }
+
+        numbers.add(correctAnswer);
+
+        if (numbers.size()>(size-5)){
+            numbers.clear();
+
+        }
 
         wrong1=new Random().nextInt(size);
         while (wrong1==correctAnswer){
@@ -310,7 +345,7 @@ public class ImageGridFragmentGame extends Fragment {
             setImageGlide(image3,animals.get(correctAnswer).getImageSmall());
         }
 
-       // SoundPlay.playSP(getContext(), animals.get(correctAnswer).getSound());
+        // SoundPlay.playSP(getContext(), animals.get(correctAnswer).getSound());
 
     }
 
@@ -318,7 +353,7 @@ public class ImageGridFragmentGame extends Fragment {
         if (this!=null) {
             GlideApp.with(this)
                     .load(image)
-                    .fitCenter()
+                    //.fitCenter()
                     .transition(withCrossFade(1000))
                     .priority(Priority.LOW)
                     .skipMemoryCache(true)
@@ -329,7 +364,7 @@ public class ImageGridFragmentGame extends Fragment {
         {
             GlideApp.with(imageView.getContext())
                     .load(image)
-                    .fitCenter()
+                    //.fitCenter()
                     .transition(withCrossFade(1000))
                     .priority(Priority.LOW)
                     .skipMemoryCache(true)
@@ -344,7 +379,7 @@ public class ImageGridFragmentGame extends Fragment {
 
         if (correctCard==answer){
 
-
+            setCorrectInt();
 
 
             SoundPlay.playSP(getContext(), R.raw.correct);
@@ -381,6 +416,8 @@ public class ImageGridFragmentGame extends Fragment {
         }
         else
         {
+
+            setWrongInt();
             //звук ошибки
             SoundPlay.playSP(getContext(), R.raw.error);
             if (answer==0){
@@ -389,12 +426,12 @@ public class ImageGridFragmentGame extends Fragment {
             if (answer==1){
                 image1.setVisibility(View.INVISIBLE);
             }
-             if (answer==2){
-                 image2.setVisibility(View.INVISIBLE);
+            if (answer==2){
+                image2.setVisibility(View.INVISIBLE);
             }
             if (answer==3){
                 image3.setVisibility(View.INVISIBLE);
-        }
+            }
 
         }
     }
@@ -402,10 +439,26 @@ public class ImageGridFragmentGame extends Fragment {
 
     private void newRound (){
 
+        wrongHasTry=false;
+        //adCounter++;
+        //((MainActivity) getActivity()).incAdCounter();
+
+        //if (adCounter>13) {
+        if (((MainActivity) getActivity()).getAdCounter()>13)
+        {
+           // ((MainActivity) getActivity()).showInterstitial();
+            //adCounter=0;
+            // ((MainActivity) getActivity()).zeroAdCounter();
+            generateWrong();
+            setImages();
+
+            mFirebaseAnalytics.logEvent("game_ad", null);
+        }
+        else{
             generateWrong();
             setImages();
             SoundPlay.playSP(getContext(), animals.get(correctAnswer).getSound());
-
+        }
 
         Bundle params = new Bundle();
         params.putString("new_round", "New round start");
@@ -445,4 +498,31 @@ public class ImageGridFragmentGame extends Fragment {
      * from a local content provider or remote server.
      */
 
+    private void setCorrectInt(){
+        if (!wrongHasTry) {
+            correctInt++;
+
+            correctCounter.setText(String.valueOf(correctInt));
+            saveInt(KEY_CORRECT_COUNTER, correctInt);
+            ((MainActivity) getActivity()).incrementUnlockCounter();
+        }
+    };
+
+
+    private void setWrongInt(){
+        if (!wrongHasTry){
+            wrongInt++;
+            wrongCounter.setText( String.valueOf(wrongInt));
+            saveInt(KEY_WRONG_COUNTER,wrongInt);
+            wrongHasTry=true;
+        }
+    };
+
+    public void saveInt(String key, int value){
+        SharedPreferences getPrefs = PreferenceManager
+                .getDefaultSharedPreferences(this.getActivity());
+        SharedPreferences.Editor editor = getPrefs.edit();
+        editor.putInt(key, value);
+        editor.commit();
+    }
 }

@@ -14,6 +14,18 @@
     <string name="bigimagedesc">Po kliknięciu na duży obraz dźwięk znowu przegrał</string>
     <string name="clicktext">Kliknij na tekst</string>
     <string name="gametext">Odgadnij zwierzęta za pomocą dźwięku</string>
+    <string name="buy_ads_disable">Usuń reklamy</string>
+
+    <string name="rd_title">Spodobała ci się aplikacja?</string>
+    <string name="rd_positiveButtonText">Później</string>
+    <string name="rd_negativeButtonText">Nigdy</string>
+    <string name="rd_formTitle">Wyślij opinię</string>
+    <string name="rd_formHint">Powiedz nam, co można poprawić.</string>
+    <string name="rd_formSubmitText">Aby wysłać</string>
+    <string name="rd_formCancelText">Anuluj</string>
+
+    <string name="unlock_text1">Trzeba odgadnąć</string>
+    <string name="unlock_text2">zwierząt, w każdej grze, aby odblokować tę kartę</string>
 
 <string name="fromdottodot">Okulary w rysunki</string>
 <string name="draw">Farba.</string>
@@ -23,7 +35,7 @@
 <string name="recipeabc">Przepisy, litery i cyfry</string>
 <string name="phrasebook">Dorosłych i dzieci</string>
 
-<string name="ants">Mrówki</string>
+<string name="ants">Mrówkowate</string>
 <string name="bear">Niedźwiedź</string>
 <string name="bees">Pszczoły</string>
 <string name="bumblebee">Trzmiel</string>
@@ -31,14 +43,14 @@
 <string name="camel">Wielbłąd</string>
 <string name="cat">Kot</string>
 <string name="cavy">Świnka morska</string>
-<string name="chiken">Kurczak</string>
+<string name="chiken">Kura</string>
 <string name="cock">Kogut</string>
 <string name="cow">Krowa</string>
 <string name="cricket">Świerszcz</string>
 <string name="crocodile">Krokodyl</string>
 <string name="crow">Kruk</string>
 <string name="cuckoo">Kukułka</string>
-<string name="chipmunk">Wiewiórka</string>
+<string name="chipmunk">Burunduk</string>
 <string name="dog">Pies</string>
 <string name="dolphin">Delfin</string>
 <string name="donkey">Osioł</string>
@@ -49,8 +61,8 @@
 <string name="elephant">Słoń</string>
 <string name="elk">Łoś</string>
 <string name="fish">Ryby</string>
-<string name="flamingo">Flamingo</string>
-<string name="flies">Muchy</string>
+<string name="flamingo">Flaming</string>
+<string name="flies">Mucha</string>
 <string name="fox">Lis</string>
 <string name="frog">Żaba</string>
 <string name="goat">Koza</string>
@@ -84,11 +96,11 @@
 <string name="rat">Szczur</string>
 <string name="rhino">Nosorożec</string>
 <string name="seagull">Mewa</string>
-<string name="sealbark">Navy seal</string>
+<string name="sealbark">Fokowate</string>
 <string name="sealion">Lew morski</string>
 <string name="sheep">Owca</string>
 <string name="snake">Wąż</string>
-<string name="squirrel">Białka</string>
+<string name="squirrel">Wiewiórka</string>
 <string name="tiger">Tygrys</string>
 <string name="turkey">Indyk</string>
 <string name="walrus">Mors</string>
@@ -105,15 +117,15 @@
 <string name="mole">Kret</string>
 <string name="otter">Wydra</string>
 <string name="rabbit">Królik</string>
-<string name="robin">Robin</string>
+<string name="robin">Rudzik</string>
 <string name="skunk">Skunks</string>
-<string name="tit">Sikora</string>
+<string name="tit">Sikorka</string>
 <string name="toucan">Tukan</string>
 <string name="turtle">Żółw</string>
 <string name="bison">Żubr</string>
 <string name="blackgrouse">Cietrzew</string>
 <string name="boar">Dzik</string>
-<string name="hummingbird">Koliber</string>
+<string name="hummingbird">Kolibrowate</string>
 <string name="lobster">Rak</string>
 <string name="cicada">Cykada</string>
 <string name="bullfinch">Gil</string>
@@ -122,18 +134,37 @@
 <string name="canary">Kanarek</string>
 <string name="magpie">Sroka</string>
 <string name="bat">Nietoperz</string>
-<string name="jay">Soyka</string>
+<string name="jay">Sójka</string>
 <string name="starling">Szpak</string>
-<string name="alpaca">Alpaki</string>
+<string name="alpaca">Alpaka</string>
 <string name="hyena">Hiena</string>
-<string name="dragon">Dragon</string>
+<string name="dragon">Smok</string>
 <string name="unicorn">Jednorożec</string>
 <string name="pokemon">Pokemon</string>
-<string name="buckbeak">Buckbeak</string>
-<string name="dinosaur">Dinozaurów</string>
-<string name="pegasus">Pegasus</string>
+<string name="buckbeak">Hipogryf</string>
+<string name="dinosaur">Dinozaury</string>
+<string name="pegasus">Pegaz</string>
 <string name="centaur">Centaur</string>
-<string name="phoenix">Phoenix</string>
+<string name="phoenix">Feniks</string>
 <string name="waternymph">Syrenka</string>
-<string name="griffon">Griffon</string>
+<string name="griffon">Gryf</string>
+    <string name="shark"> Rekin </string>
+
+    <string name="sparrow">Wróbel</string>
+    <string name="pony">Kucyk</string>
+    <string name="spider">Pająk</string>
+    <string name="armadillo">Pancernik</string>
+    <string name="wombat">Wombat</string>
+    <string name="capybara">Kapibara</string>
+    <string name="meerkat">Surykatka</string>
+    <string name="quokka">kuoka krótkoogonowa</string>
+    <string name="sloth">Leniwiec</string>
+    <string name="monitorlizard">waran</string>
+    <string name="anteater">Mrówkojad</string>
+    <string name="ferret">Fretka</string>
+    <string name="lizard">Jaszczurka</string>
+    <string name="wolverine">rosomak</string>
+
+    <string name="yeti">Yeti</string>
+
 </resources>

@@ -1,56 +1,103 @@
 package com.yamilab.animalsoundsnoads;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
-import android.support.annotation.Nullable;
-import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+
 
 import com.bumptech.glide.MemoryCategory;
 import com.bumptech.glide.Priority;
 
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Random;
 
 import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade;
+
 
 public class MainActivity extends AppCompatActivity implements TTSListener  {
 
     /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
+     * The {@link PagerAdapter} that will provide
      * fragments for each of the sections. We use a
      * {@link FragmentPagerAdapter} derivative, which will keep every
      * loaded fragment in memory. If this becomes too memory intensive, it
      * may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
+     * {@link FragmentStatePagerAdapter}.
      */
+
+    //если тру то отключены, фолс включены
+    private final boolean ads_default = false;
+    private boolean backPressedToExitOnce;
+    private boolean ratingDialogWasShown;
+
     private SectionsPagerAdapter mSectionsPagerAdapter;
 
+    private static final String ADS_DISABLE_KEY = "ads_disable_enabled";
+    private static final String GRID_MINIMIZATION_KEY = "grid_minimization";
+    private static final String PRESSED_BACK_ONCE_KEY ="show_rating_dialog";
+    private static final String RATING_DIALOG_WAS_SHOWN_KEY="rating_dialog_was_shown";
+    private static final String NUMBER_OF_RATING_START_KEY="number_of_rating_start";
+    private static final  String DONT_SHOW_RATING_DIALOF_KEY="dont_show_rating_dialog";
+    private static final String KEY_TO_UNLOCK_FAIRY = "unlockFairy";
+    private static final String REVIEW_ENABLED="ReviewEnabled";
+
+    private FirebaseRemoteConfig mFirebaseRemoteConfig;
+
+    public boolean grid = false;
+
+    public boolean ads_disable_button=false;
+    private boolean dontShowRatingDialog=true;
+    private boolean review_enabled = true;
+    private int numRatingDialog=0;
+
     private int firstTab = 3;
+    private int ratingCounter=0;
 
     /**
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
-
+    //private AdView mAdView;
+    //private InterstitialAd mInterstitialAd;
     private int adCount=0;
     boolean showInterstitialAd = true;
     boolean notFirstStart = true;
@@ -62,6 +109,30 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
     private ArrayList<Animal> wild, home, aqua, birds, insects, fairy,animals;
     private int screenWidth=800,screenHeight=1280;
     private String language="en";
+
+    private int unlockCounter=0;
+
+
+
+
+    private Animation mScaleAnimation0,
+            mScaleAnimation1,
+            mScaleAnimation2,
+            mScaleAnimation3,
+            mScaleAnimation4;
+
+    public boolean ads_disabled=false;
+
+
+    //по покупкам
+
+    private String mSkuId = "disable_ads";
+    private List<String> skuList = new ArrayList<>();
+    private SharedPreferences getPrefs;
+    private TabLayout.Tab  tab;
+    TabLayout tabLayout;
+
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -82,8 +153,20 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
                 .showAfter(1);
         */
 
+        getPrefs = PreferenceManager
+                .getDefaultSharedPreferences(getBaseContext());
 
+        //  Create a new boolean and preference and set it to true
+        ads_disabled = getPrefs.getBoolean("ads_disabled_key", ads_default);
+        ads_disable_button = getPrefs.getBoolean("ads_disable_button_key",false);
+        grid=getPrefs.getBoolean(GRID_MINIMIZATION_KEY,false);
+        backPressedToExitOnce = getPrefs.getBoolean(PRESSED_BACK_ONCE_KEY,false);
+        ratingDialogWasShown =  getPrefs.getBoolean(RATING_DIALOG_WAS_SHOWN_KEY,false);
+        dontShowRatingDialog = getPrefs.getBoolean(DONT_SHOW_RATING_DIALOF_KEY,false);
 
+        numRatingDialog = getPrefs.getInt(NUMBER_OF_RATING_START_KEY,0);
+
+        unlockCounter = getPrefs.getInt(KEY_TO_UNLOCK_FAIRY,0);
 
 
 
@@ -110,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
 
                     //  Edit preference to make it false because we don't want this to run again
                     e.putBoolean("firstStart", false);
-                   // showInterstitialAd = false;
+                    // showInterstitialAd = false;
                     notFirstStart = false;
                     //  Apply changes
                     e.apply();
@@ -123,7 +206,9 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
 
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
-        setContentView(R.layout.activity_main);
+
+
+            setContentView(R.layout.activity_main_down_tabs_noads);
 
 
 
@@ -136,6 +221,7 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+
         initData();
 
 
@@ -146,21 +232,37 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
         mViewPager.setAdapter(mSectionsPagerAdapter);
 //        mViewPager.setOffscreenPageLimit(3);
 
-        TabLayout tabLayout = findViewById(R.id.tabs);
+
+
+
+        tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
         tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
 
+        int[] resID={
+                R.drawable.tab_home,
+                R.drawable.tab_wild,
+                R.drawable.tab_birds,
+                R.drawable.tab_aqua,
+                R.drawable.tab_insects,
+                R.drawable.tab_fairy};
 
-
+        mScaleAnimation0 = AnimationUtils.loadAnimation(this,R.anim.myscale0);
+        mScaleAnimation1 = AnimationUtils.loadAnimation(this,R.anim.myscale1);
+        mScaleAnimation2 = AnimationUtils.loadAnimation(this,R.anim.myscale2);
+        mScaleAnimation3 = AnimationUtils.loadAnimation(this,R.anim.myscale3);
+        mScaleAnimation4 = AnimationUtils.loadAnimation(this,R.anim.myscale4);
 
         View view0 = getLayoutInflater().inflate(R.layout.customtab, null);
         ImageView imageViewTab0 = view0.findViewById(R.id.icon);
         imageViewTab0.setImageResource(R.drawable.tab_game2);
+        imageViewTab0.startAnimation(mScaleAnimation0);
         tabLayout.getTabAt(0).setCustomView(view0);
 
         View view1 = getLayoutInflater().inflate(R.layout.customtab, null);
         ImageView imageViewTab1 = view1.findViewById(R.id.icon);
         imageViewTab1.setImageResource(R.drawable.tab_game);
+        imageViewTab1.startAnimation(mScaleAnimation2);
         tabLayout.getTabAt(1).setCustomView(view1);
 
 
@@ -170,38 +272,44 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
         view1.findViewById(R.id.icon).setBackgroundResource(R.drawable.tab_game);
         tabLayout.addTab(tabLayout.newTab().setCustomView(view1));
         */
-       // tabLayout.getTabAt(0).setIcon( R.drawable.tab_game2);
-       //tabLayout.getTabAt(1).setIcon( R.drawable.tab_game);
-
+        // tabLayout.getTabAt(0).setIcon( R.drawable.tab_game2);
+        //tabLayout.getTabAt(1).setIcon( R.drawable.tab_game);
+       // tabLayout.getTabAt(2).setText("Ads");
 
         View view3 = getLayoutInflater().inflate(R.layout.customtab, null);
         ImageView imageViewTab3 = view3.findViewById(R.id.icon);
         imageViewTab3.setImageResource(R.drawable.tab_home);
+        imageViewTab3.startAnimation(mScaleAnimation4);
         tabLayout.getTabAt(2).setCustomView(view3);
 
         View view4 = getLayoutInflater().inflate(R.layout.customtab, null);
         ImageView imageViewTab4 = view4.findViewById(R.id.icon);
         imageViewTab4.setImageResource(R.drawable.tab_wild);
+        imageViewTab4.startAnimation(mScaleAnimation1);
         tabLayout.getTabAt(3).setCustomView(view4);
 
         View view5 = getLayoutInflater().inflate(R.layout.customtab, null);
         ImageView imageViewTab5 = view5.findViewById(R.id.icon);
         imageViewTab5.setImageResource(R.drawable.tab_birds);
+        imageViewTab5.startAnimation(mScaleAnimation3);
         tabLayout.getTabAt(4).setCustomView(view5);
 
         View view6 = getLayoutInflater().inflate(R.layout.customtab, null);
         ImageView imageViewTab6 = view6.findViewById(R.id.icon);
         imageViewTab6.setImageResource(R.drawable.tab_aqua);
+        imageViewTab6.startAnimation(mScaleAnimation0);
         tabLayout.getTabAt(5).setCustomView(view6);
 
         View view7 = getLayoutInflater().inflate(R.layout.customtab, null);
         ImageView imageViewTab7 = view7.findViewById(R.id.icon);
         imageViewTab7.setImageResource(R.drawable.tab_insects);
+        imageViewTab7.startAnimation(mScaleAnimation2);
         tabLayout.getTabAt(6).setCustomView(view7);
 
         View view8 = getLayoutInflater().inflate(R.layout.customtab, null);
         ImageView imageViewTab8 = view8.findViewById(R.id.icon);
         imageViewTab8.setImageResource(R.drawable.tab_fairy);
+        imageViewTab8.startAnimation(mScaleAnimation4);
         tabLayout.getTabAt(7).setCustomView(view8);
 
         /*
@@ -217,7 +325,7 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
             }
         }
         */
-        TabLayout.Tab tab = tabLayout.getTabAt(firstTab);
+        tab = tabLayout.getTabAt(firstTab);
         tab.select();
 
 
@@ -243,6 +351,12 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
 
 
 
+
+
+
+
+
+
         GlideApp.with(this)
                 // .asDrawable()
                 // .load(mStorageRef.child(mDataSet.get(position).getImage()))
@@ -261,10 +375,45 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
                 .transition(withCrossFade(1000))
                 .into((ImageView) findViewById(R.id.imageViewBackground));
 
+        //loadInterstitial();
 
 
-       // Debug.stopMethodTracing();
+
+        //удаленная конфигурация
+        mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+        FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
+                //.setDeveloperModeEnabled(BuildConfig.DEBUG)
+                .build();
+        mFirebaseRemoteConfig.setConfigSettings(configSettings);
+        mFirebaseRemoteConfig.setDefaults(R.xml.remote_config_defaults);
+
+
+        fetch();
+
+        // Debug.stopMethodTracing();
+
+
     }
+
+
+
+
+
+
+
+
+
+
+    public void writeBoolean (boolean enabled){
+        SharedPreferences getPrefs = PreferenceManager
+                .getDefaultSharedPreferences(getBaseContext());
+        SharedPreferences.Editor e = getPrefs.edit();
+        e.putBoolean("ads_disabled_key", enabled);
+        e.apply();
+        ads_disabled=enabled;
+
+    }
+
 
 
 
@@ -301,7 +450,7 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
             }
 
         }
-     }
+    }
 
 
 
@@ -309,25 +458,29 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
     public void speak(String text,int sound) {
 
 
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                try {
-                    tts.speak(text, TextToSpeech.QUEUE_ADD, null);
-                }
-                catch (Exception e){
-                   // SoundPlay.playSP(this,sound);
-                }
-
-            } else {
-                try {
-                    tts.speak(text, TextToSpeech.QUEUE_ADD, null, "id1");
-                }
-                catch (Exception e){
-                    //SoundPlay.playSP(this,sound);
-                }
-
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            try {
+                tts.speak(text, TextToSpeech.QUEUE_ADD, null);
+            }
+            catch (Exception e){
+                // SoundPlay.playSP(this,sound);
             }
 
+        } else {
+            try {
+                tts.speak(text, TextToSpeech.QUEUE_ADD, null, "id1");
+            }
+            catch (Exception e){
+                //SoundPlay.playSP(this,sound);
+            }
+
+        }
+
     }
+
+
+
+
 
 
 
@@ -391,38 +544,38 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
             // Return a PlaceholderFragment (defined as a static inner class below).
 
 
+
             switch (position) {
 
                 case 0:
-
+                    mFirebaseAnalytics.logEvent("tab_game2", null);
                     return ImageGridFragmentGame2.newInstance(animals,screenWidth);
 
                 case 1:
-
+                    mFirebaseAnalytics.logEvent("tab_game1", null);
                     return ImageGridFragmentGame.newInstance(animals,screenWidth);
 
-
-
-
                 case 2:
-
+                    mFirebaseAnalytics.logEvent("tab_home", null);
                     return ImageGridFragment.newInstance( home,screenWidth);
 
                 case 3:
-
+                    mFirebaseAnalytics.logEvent("tab_wild", null);
                     return ImageGridFragment.newInstance( wild,screenWidth);
                 case 4:
-
+                    mFirebaseAnalytics.logEvent("tab_birds", null);
                     return ImageGridFragment.newInstance( birds,screenWidth);
                 case 5:
-
+                    mFirebaseAnalytics.logEvent("tab_aqua", null);
                     return ImageGridFragment.newInstance( aqua,screenWidth);
                 case 6:
-
+                    mFirebaseAnalytics.logEvent("tab_insects", null);
                     return ImageGridFragment.newInstance( insects,screenWidth);
                 case 7:
+                    mFirebaseAnalytics.logEvent("tab_fairy", null);
 
-                    return ImageGridFragment.newInstance(fairy,screenWidth);
+                        return ImageGridFragment.newInstance(fairy, screenWidth);
+
 
             }
             return ImageGridFragment.newInstance(home,screenWidth);//PlaceholderFragment.newInstance(position + 1);
@@ -437,47 +590,83 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
 
     }
 
+    @Override
+    public void onResume() {
 
+
+
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+
+        super.onPause();
+    }
 
     @Override
     public void onDestroy() {
-        // Destroy the AdView.
 
         if (tts != null) {
             tts.stop();
             tts.shutdown();
         }
 
-        super.onDestroy();
         GlideApp.get(this).clearMemory();
+        SoundPlay.clearSP(this);
+        super.onDestroy();
+
     }
 
     public class TtsInit extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
-                @Override
-                public void onInit(int status) {
-                    if (status==TextToSpeech.SUCCESS) {
-                        int result = tts.setLanguage(new Locale(language, ""));
+            try {
+                tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+                    @Override
+                    public void onInit(int status) {
+                        if (status == TextToSpeech.SUCCESS) {
+                            int result = tts.setLanguage(new Locale(language, ""));
+                        }
                     }
-                    else
-                    {
+                });
 
+            }
+            catch (Exception e){
+                tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+                    @Override
+                    public void onInit(int status) {
+                        if (status == TextToSpeech.SUCCESS) {
+                            int result = tts.setLanguage(new Locale("en", ""));
+                        }
                     }
-                }
-            });
+                });
+
+            }
+
+
             return null;
         }
     }
 
     private void makeLanguageList(String locale){
+
+        if (locale.equals("ar")){
+            language="ar";
+        }
+
+        if (locale.equals("bg")){
+            language="bg";
+        }
         if (locale.equals("cs")){
             language="cs";
         }
         if (locale.equals("de")){
             language="de";
+        }
+        if (locale.equals("el")){
+            language="el";
         }
         if (locale.equals("es")){
             language="es";
@@ -485,11 +674,22 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
         if (locale.equals("fi")){
             language="fi";
         }
+        /*
+        if (locale.equals("fil")){
+            language="fil";
+        }
+        */
         if (locale.equals("fr")){
             language="fr";
         }
         if (locale.equals("hi")){
             language="hi";
+        }
+        if (locale.equals("hu")){
+            language="hu";
+        }
+        if (locale.equals("in")){
+            language="in";
         }
         if (locale.equals("it")){
             language="it";
@@ -500,14 +700,23 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
         if (locale.equals("ko")){
             language="ko";
         }
+        if (locale.equals("nl")){
+            language="nl";
+        }
         if (locale.equals("pl")){
             language="pl";
         }
         if (locale.equals("pt")){
             language="pt";
         }
+        if (locale.equals("ro")){
+            language="ro";
+        }
         if (locale.equals("ru")){
             language="ru";
+        }
+        if (locale.equals("sv")){
+            language="sv";
         }
         if (locale.equals("tr")){
             language="tr";
@@ -515,7 +724,9 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
         if (locale.equals("uk")){
             language="uk";
         }
-
+        if (locale.equals("zh")){
+            language="zh";
+        }
 
 
 
@@ -561,18 +772,21 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
         wild = new ArrayList<>();
 
         wild.add(new Animal(getString(R.string.bear),R.drawable.w0hd,R.raw.w0,true,"w0.gif"));
-        wild.add(new Animal(getString(R.string.wolf),R.drawable.w1hd,R.raw.w1,true,"w1.gif"));
-        wild.add(new Animal(getString(R.string.leo),R.drawable.w2hd,R.raw.w2,true,"w2.gif"));
-        wild.add(new Animal(getString(R.string.tiger),R.drawable.w3hd,R.raw.w3,true,"w3.gif"));
-        wild.add(new Animal(getString(R.string.monkey),R.drawable.w4hd,R.raw.w4,true,"w4.gif"));
         wild.add(new Animal(getString(R.string.elephant),R.drawable.w5hd,R.raw.w5));
-        wild.add(new Animal(getString(R.string.camel),R.drawable.w6hd,R.raw.w6));
-        wild.add(new Animal(getString(R.string.zebra),R.drawable.w7hd,R.raw.w7));
-        wild.add(new Animal(getString(R.string.jackal),R.drawable.w8hd,R.raw.w8));
-        wild.add(new Animal(getString(R.string.snake),R.drawable.w9hd,R.raw.w9));
+        wild.add(new Animal(getString(R.string.wolf),R.drawable.w1hd,R.raw.w1,true,"w1.gif"));
+
+        wild.add(new Animal(getString(R.string.camel),R.drawable.w6hd,R.raw.w06));
+        wild.add(new Animal(getString(R.string.monkey),R.drawable.w4hd,R.raw.w4,true,"w4.gif"));
+        wild.add(new Animal(getString(R.string.jackal),R.drawable.w8hd,R.raw.w08));
+        wild.add(new Animal(getString(R.string.zebra),R.drawable.w7hd,R.raw.w07));
+        wild.add(new Animal(getString(R.string.leo),R.drawable.w2hd,R.raw.w2,true,"w2.gif"));
+        wild.add(new Animal(getString(R.string.rhino),R.drawable.w12hd,R.raw.w12));
+        wild.add(new Animal(getString(R.string.tiger),R.drawable.w3hd,R.raw.w3,true,"w3.gif"));
+
+        wild.add(new Animal(getString(R.string.snake),R.drawable.w9hd,R.raw.w09));
         wild.add(new Animal(getString(R.string.fox),R.drawable.w10hd,R.raw.w10,true,"w10.gif"));
         wild.add(new Animal(getString(R.string.hare),R.drawable.w11hd,R.raw.w11));
-        wild.add(new Animal(getString(R.string.rhino),R.drawable.w12hd,R.raw.w12));
+
         wild.add(new Animal(getString(R.string.crocodile),R.drawable.w13hd,R.raw.w13));
         wild.add(new Animal(getString(R.string.koala),R.drawable.w14hd,R.raw.w14));
         wild.add(new Animal(getString(R.string.panda),R.drawable.w15hd,R.raw.w15,true,"w15.gif"));
@@ -583,8 +797,9 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
         wild.add(new Animal(getString(R.string.racoon),R.drawable.w20hd,R.raw.w20));
         wild.add(new Animal(getString(R.string.squirrel),R.drawable.w21hd,R.raw.w21));
         wild.add(new Animal(getString(R.string.rat),R.drawable.w22hd,R.raw.w22,true,"w22.gif"));
-        wild.add(new Animal(getString(R.string.mouse),R.drawable.w23hd,R.raw.w23,true,"w23.gif"));
         wild.add(new Animal(getString(R.string.jaguar),R.drawable.w24hd,R.raw.w24));
+        wild.add(new Animal(getString(R.string.mouse),R.drawable.w23hd,R.raw.w23,true,"w23.gif"));
+
         wild.add(new Animal(getString(R.string.hippopotamus),R.drawable.w25hd,R.raw.w25));
         wild.add(new Animal(getString(R.string.badger),R.drawable.w26barsuk, R.raw.w26));
         wild.add(new Animal(getString(R.string.beaver),R.drawable.w27beaver, R.raw.w27));
@@ -598,6 +813,18 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
         wild.add(new Animal(getString(R.string.chipmunk),R.drawable.w35chipmunk,R.raw.w35));
         wild.add(new Animal(getString(R.string.alpaca),R.drawable.w36alpaca,R.raw.w36,true,"w36.gif"));
         wild.add(new Animal(getString(R.string.hyena),R.drawable.w37hyena,R.raw.w37));
+        wild.add(new Animal(getString(R.string.bat),R.drawable.b28bat,R.raw.b28));
+        wild.add(new Animal(getString(R.string.armadillo),R.drawable.w38,R.raw.w38));
+        wild.add(new Animal(getString(R.string.wombat),R.drawable.w39,R.raw.w39));
+        wild.add(new Animal(getString(R.string.capybara),R.drawable.w40,R.raw.w40));
+        wild.add(new Animal(getString(R.string.meerkat),R.drawable.w41,R.raw.w41));
+        wild.add(new Animal(getString(R.string.quokka),R.drawable.w42,R.raw.w42));
+        wild.add(new Animal(getString(R.string.sloth),R.drawable.w43,R.raw.w43));
+        wild.add(new Animal(getString(R.string.monitorlizard),R.drawable.w44,R.raw.w44));
+        wild.add(new Animal(getString(R.string.anteater),R.drawable.w45,R.raw.w45));
+        wild.add(new Animal(getString(R.string.ferret),R.drawable.w46,R.raw.w46));
+        wild.add(new Animal(getString(R.string.lizard),R.drawable.w47,R.raw.w47));
+        wild.add(new Animal(getString(R.string.wolverine),R.drawable.w48,R.raw.w48));
 
         home = new ArrayList<>();
         home.add(new Animal(getString(R.string.dog),R.drawable.h0hd,R.raw.h0,true,"h0.gif"));
@@ -606,24 +833,29 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
         home.add(new Animal(getString(R.string.cock),R.drawable.h3hd,R.raw.h3));
         home.add(new Animal(getString(R.string.chiken),R.drawable.h4hd,R.raw.h4));
         home.add(new Animal(getString(R.string.cow),R.drawable.h5hd,R.raw.h5,true,"h5.gif"));
-        home.add(new Animal(getString(R.string.horse),R.drawable.h6hd,R.raw.h6,true,"h6.gif"));
         home.add(new Animal(getString(R.string.sheep),R.drawable.h7hd,R.raw.h7));
+        home.add(new Animal(getString(R.string.horse),R.drawable.h6hd,R.raw.h6,true,"h6.gif"));
+
         home.add(new Animal(getString(R.string.goat),R.drawable.h8hd,R.raw.h8));
         home.add(new Animal(getString(R.string.donkey),R.drawable.h9hd,R.raw.h9));
-        home.add(new Animal(getString(R.string.turkey),R.drawable.h10hd,R.raw.h10));
+
         home.add(new Animal(getString(R.string.cavy),R.drawable.h11hd,R.raw.h11,true,"h11.gif"));
+        home.add(new Animal(getString(R.string.turkey),R.drawable.h10hd,R.raw.h10));
         home.add(new Animal(getString(R.string.rabbit),R.drawable.h12rabbit,R.raw.h12,true,"h12.gif"));
+        home.add(new Animal(getString(R.string.pony),R.drawable.h13,R.raw.h13));
 
         aqua = new ArrayList<>();
         aqua.add(new Animal(getString(R.string.dolphin),R.drawable.a0hd,R.raw.a0,true,"a0.gif"));
+        aqua.add(new Animal(getString(R.string.shark),R.drawable.a11hd,R.raw.a11));
         aqua.add(new Animal(getString(R.string.sealbark),R.drawable.a1hd,R.raw.a1));
         aqua.add(new Animal(getString(R.string.frog),R.drawable.a2hd,R.raw.a2));
         aqua.add(new Animal(getString(R.string.penguin),R.drawable.a3hd,R.raw.a3,true,"a3.gif"));
         aqua.add(new Animal(getString(R.string.walrus),R.drawable.a4hd,R.raw.a4));
         aqua.add(new Animal(getString(R.string.sealion),R.drawable.a5hd,R.raw.a5));
         aqua.add(new Animal(getString(R.string.whale),R.drawable.a6hd,R.raw.a6));
-        aqua.add(new Animal(getString(R.string.fish),R.drawable.a7hd,R.raw.a7));
+
         aqua.add(new Animal(getString(R.string.turtle),R.drawable.a8turtle,R.raw.a8,true,"a8.gif"));
+        aqua.add(new Animal(getString(R.string.fish),R.drawable.a7hd,R.raw.a7));
         aqua.add(new Animal(getString(R.string.otter),R.drawable.a9otter,R.raw.a9,true,"a9.gif"));
         aqua.add(new Animal(getString(R.string.lobster),R.drawable.a10lobster,R.raw.a10));
 
@@ -637,14 +869,17 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
         birds.add(new Animal(getString(R.string.eagle),R.drawable.b6hd,R.raw.b6,true,"b6.gif"));
         birds.add(new Animal(getString(R.string.hawk),R.drawable.b7hd,R.raw.b7));
         birds.add(new Animal(getString(R.string.woodpecker),R.drawable.b8hd,R.raw.b8,true,"b8.gif"));
+        birds.add(new Animal(getString(R.string.pelican),R.drawable.b12hd,R.raw.b12));
+
         birds.add(new Animal(getString(R.string.parrot),R.drawable.b9hd,R.raw.b9,true,"b9.gif"));
+        birds.add(new Animal(getString(R.string.catbird),R.drawable.b16catbird,R.raw.b16));
         birds.add(new Animal(getString(R.string.owl),R.drawable.b10hd,R.raw.b10,true,"b10.gif"));
         birds.add(new Animal(getString(R.string.cuckoo),R.drawable.b11hd,R.raw.b11));
-        birds.add(new Animal(getString(R.string.pelican),R.drawable.b12hd,R.raw.b12));
+
         birds.add(new Animal(getString(R.string.ostrich),R.drawable.b13hd,R.raw.b13));
         birds.add(new Animal(getString(R.string.flamingo),R.drawable.b14hd,R.raw.b14,true,"b14.gif"));
         birds.add(new Animal(getString(R.string.peacock),R.drawable.b15hd,R.raw.b15));
-        birds.add(new Animal(getString(R.string.catbird),R.drawable.b16catbird,R.raw.b16));
+
         birds.add(new Animal(getString(R.string.tit),R.drawable.b17tit,R.raw.b17));
         birds.add(new Animal(getString(R.string.toucan),R.drawable.b18toucan,R.raw.b18));
         birds.add(new Animal(getString(R.string.robin),R.drawable.b19robin,R.raw.b19));
@@ -655,14 +890,15 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
         birds.add(new Animal(getString(R.string.heron),R.drawable.b25heron,R.raw.b25));
         birds.add(new Animal(getString(R.string.canary),R.drawable.b26canary,R.raw.b26));
         birds.add(new Animal(getString(R.string.magpie),R.drawable.b27magpie,R.raw.b27));
-        birds.add(new Animal(getString(R.string.bat),R.drawable.b28bat,R.raw.b28));
+
         birds.add(new Animal(getString(R.string.jay),R.drawable.b29jay,R.raw.b29));
         birds.add(new Animal(getString(R.string.starling),R.drawable.b30starling,R.raw.b30));
+        birds.add(new Animal(getString(R.string.sparrow),R.drawable.b31,R.raw.b31));
 
         insects = new ArrayList<>();
-        insects.add(new Animal(getString(R.string.bees),R.drawable.i0hd,R.raw.i0));
-        insects.add(new Animal(getString(R.string.flies),R.drawable.i1hd,R.raw.i1));
-        insects.add(new Animal(getString(R.string.mosquito),R.drawable.i2hd,R.raw.i2,true,"i2.gif"));
+        insects.add(new Animal(getString(R.string.bees),R.drawable.i0hd,R.raw.i00));
+        insects.add(new Animal(getString(R.string.flies),R.drawable.i1hd,R.raw.i01));
+        insects.add(new Animal(getString(R.string.mosquito),R.drawable.i2hd,R.raw.i02,true,"i2.gif"));
         insects.add(new Animal(getString(R.string.grasshopper),R.drawable.i3hd,R.raw.i3));
         insects.add(new Animal(getString(R.string.bumblebee),R.drawable.i4hd,R.raw.i4));
         insects.add(new Animal(getString(R.string.cricket),R.drawable.i5hd,R.raw.i5));
@@ -671,6 +907,8 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
         insects.add(new Animal(getString(R.string.ants),R.drawable.i8hd,R.raw.i8));
         insects.add(new Animal(getString(R.string.mantis),R.drawable.i9hd,R.raw.i9));
         insects.add(new Animal(getString(R.string.cicada), R.drawable.i10hd,R.raw.i10));
+        insects.add(new Animal(getString(R.string.spider), R.drawable.i11,R.raw.i11));
+
 
         fairy = new ArrayList<>();
         fairy.add(new Animal(getString(R.string.dragon), R.drawable.f0hd,R.raw.f0));
@@ -683,6 +921,7 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
         fairy.add(new Animal(getString(R.string.phoenix), R.drawable.f7hd,R.raw.f7,true, "f7.gif"));
         fairy.add(new Animal(getString(R.string.waternymph), R.drawable.f8hd,R.raw.f8));
         fairy.add(new Animal(getString(R.string.griffon), R.drawable.f9hd,R.raw.f9));
+        fairy.add(new Animal(getString(R.string.yeti), R.drawable.f10hd,R.raw.f10));
 
 
         animals =new ArrayList<Animal>();
@@ -691,18 +930,150 @@ public class MainActivity extends AppCompatActivity implements TTSListener  {
         animals.addAll(birds);
         animals.addAll(aqua);
         animals.addAll(insects);
-        animals.addAll(fairy);
+        if (unlockCounter>9) {
+            animals.addAll(fairy);
+        }
 
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-       // if (data == null) {return;}
-       // String name = data.getStringExtra("name");
-       // tvName.setText("Your name is " + name);
-        mViewPager.setCurrentItem(4);
+
+
+    private void fetch() {
+
+        long cacheExpiration = 01;
+        if (!notFirstStart) {
+            cacheExpiration = 1; // 1 hour in seconds.
+        }
+
+        // If your app is using developer mode, cacheExpiration is set to 0, so each fetch will
+        // retrieve values from the service.
+        if (mFirebaseRemoteConfig.getInfo().getConfigSettings().isDeveloperModeEnabled()) {
+            cacheExpiration = 0;
+        }
+
+        // [START fetch_config_with_callback]
+        // cacheExpirationSeconds is set to cacheExpiration here, indicating the next fetch request
+        // will use fetch data from the Remote Config service, rather than cached parameter values,
+        // if cached parameter values are more than cacheExpiration seconds old.
+        // See Best Practices in the README for more information.
+        mFirebaseRemoteConfig.fetch(cacheExpiration)
+                .addOnCompleteListener(this, new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+
+
+                            // After config data is successfully fetched, it must be activated before newly fetched
+                            // values are returned.
+                            mFirebaseRemoteConfig.activateFetched();
+
+                            SharedPreferences getPrefs = PreferenceManager
+                                    .getDefaultSharedPreferences(getBaseContext());
+                            SharedPreferences.Editor e = getPrefs.edit();
+
+                            if (mFirebaseRemoteConfig.getBoolean(ADS_DISABLE_KEY)) {
+                                ads_disable_button=true;
+                            }
+                            else {
+                                ads_disable_button=false;
+                            }
+
+
+                            if (mFirebaseRemoteConfig.getBoolean(GRID_MINIMIZATION_KEY)){
+                                grid=true;
+
+                            }
+                            else {
+                                grid=false;
+
+                            }
+
+                            if (!mFirebaseRemoteConfig.getBoolean(REVIEW_ENABLED)) {
+                                review_enabled = false;
+                            }
+
+                            e.putBoolean(GRID_MINIMIZATION_KEY,grid);
+                            e.putBoolean("ads_disable_button_key", ads_disable_button);
+                            e.apply();
+
+
+
+                        }
+                        //else {
+                        // Toast.makeText(MainActivity.this, "Fetch Failed",
+                        //         Toast.LENGTH_SHORT).show();
+                        //}
+
+                    }
+                });
+        // [END fetch_config_with_callback]
     }
 
 
+
+    public int getAdCounter(){
+        return adCount;
+    }
+
+    public void zeroAdCounter(){
+        // adCount=0;
+    }
+
+    public boolean getGrid (){
+        return grid;
+    }
+
+
+
+    public void incrementRating(){
+        numRatingDialog++;
+        saveInt(NUMBER_OF_RATING_START_KEY,numRatingDialog);
+        if (numRatingDialog>3){
+            backPressedToExitOnce=true;
+            saveBoolean(PRESSED_BACK_ONCE_KEY,true);
+            //Toast.makeText(this, "True", Toast.LENGTH_SHORT).show();
+        }
+        if (numRatingDialog==10||numRatingDialog==20||numRatingDialog==30||numRatingDialog==40||numRatingDialog==50){
+            backPressedToExitOnce=false;
+            saveBoolean(PRESSED_BACK_ONCE_KEY,false);
+            //Toast.makeText(this, "True", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    public void incrementUnlockCounter (){
+        unlockCounter++;
+        saveInt(KEY_TO_UNLOCK_FAIRY,unlockCounter);
+    }
+
+    private void openPlaystore(Context context) {
+        final Uri marketUri = Uri.parse("market://details?id=com.yamilab.animalsounds");
+        try {
+            context.startActivity(new Intent(Intent.ACTION_VIEW, marketUri));
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(context, "Couldn't find PlayStore on this device", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void saveBoolean(String key, boolean value){
+        SharedPreferences getPrefs1 = PreferenceManager
+                .getDefaultSharedPreferences(getBaseContext());
+        SharedPreferences.Editor editor = getPrefs1.edit();
+        editor.putBoolean(key, value);
+        editor.commit();
+    }
+
+    public void saveInt(String key, int value){
+        SharedPreferences getPrefs1 = PreferenceManager
+                .getDefaultSharedPreferences(getBaseContext());
+        SharedPreferences.Editor editor = getPrefs1.edit();
+        editor.putInt(key, value);
+        editor.commit();
+    }
+
+    public void setGameTab (){
+        tab = tabLayout.getTabAt(new Random().nextInt(2));
+        tab.select();
+    }
 
 }

@@ -14,6 +14,18 @@
     <string name="clicktextdesc">При клике по тексту - название животного</string>
     <string name="game">Игра</string>
     <string name="gametext">Угадывайте животных в играх</string>
+    <string name="buy_ads_disable">Убрать рекламу</string>
+
+    <string name="rd_title">Вам понравилось приложение?</string>
+    <string name="rd_positiveButtonText">Позже</string>
+    <string name="rd_negativeButtonText">Никогда</string>
+    <string name="rd_formTitle">Отправить отзыв</string>
+    <string name="rd_formHint">Расскажите нам что можно улучшить</string>
+    <string name="rd_formSubmitText">Отправить</string>
+    <string name="rd_formCancelText">Отмена</string>
+
+    <string name="unlock_text1" >Вам нужно угадать</string>
+    <string name="unlock_text2" >животных в любой игре чтобы разблокировать эту вкладку</string>
 
     <string name="ants">Муравьи</string>
     <string name="bear">Медведь</string>
@@ -82,7 +94,7 @@
     <string name="snake">Змея</string>
     <string name="squirrel">Белка</string>
     <string name="tiger">Тигр</string>
-    <string name="turkey">Индейка</string>
+    <string name="turkey">Индюк</string>
     <string name="walrus">Морж</string>
     <string name="whale">Кит</string>
     <string name="wolf">Волк</string>
@@ -125,14 +137,16 @@
     <string name="dragon"> Дракон </string>
     <string name="unicorn"> Единорог </string>
     <string name="pokemon"> Покемон </string>
-    <string name="buckbeak"> Клювокрыл </string>
+    <string name="buckbeak"> Гиппогриф </string>
     <string name="dinosaur"> Динозавр </string>
     <string name="pegasus"> Пегас </string>
     <string name="centaur"> Кентавр </string>
     <string name="phoenix"> Феникс </string>
     <string name="waternymph"> Русалка </string>
 
-    <string name="griffon"> Гриффон </string>
+    <string name="griffon"> Грифон </string>
+
+    <string name="shark"> Акула </string>
 
     <string name="fromdottodot">Рисуем по точкам</string>
     <string name="draw">Рисование</string>
@@ -141,5 +155,23 @@
     <string name="rebuses">Ребусы</string>
     <string name="recipeabc">Прописи буквы и цифры</string>
     <string name="phrasebook">Разговорник для детей и взрослых</string>
+
+
+    <string name="sparrow">Воробей</string>
+    <string name="pony">Пони</string>
+    <string name="spider">Паук</string>
+    <string name="armadillo">Броненосец</string>
+    <string name="wombat">Вомбат</string>
+    <string name="capybara">Капибара</string>
+    <string name="meerkat">Сурикат</string>
+    <string name="quokka">Квокка</string>
+    <string name="sloth">Ленивец</string>
+    <string name="monitorlizard">Варан</string>
+    <string name="anteater">Муравьед</string>
+    <string name="ferret">Хорёк</string>
+    <string name="lizard">Ящерица</string>
+    <string name="wolverine">Росомаха</string>
+
+    <string name="yeti">Йети</string>
 
 </resources>
